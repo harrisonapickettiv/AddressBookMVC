@@ -1,0 +1,11 @@
+version: '3.1'
+
+services:
+  db:
+    image: postgres
+    restart: always
+    ports: 
+      - "5432:5432"
+    environment:
+      POSTGRES_PASSWORD: 1ef368f6-3867-4ca0-a32b-3e466aa5c74f
+
