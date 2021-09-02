@@ -7,16 +7,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using AddressBookMVC.Data;
 using AddressBookMVC.Models;
+using AddressBookMVC.Services.Interfaces;
 
 namespace AddressBookMVC.Controllers
 {
   public class ContactsController : Controller
   {
     private readonly ApplicationDbContext _context;
+    private readonly IImageService _imageService;
 
-    public ContactsController(ApplicationDbContext context)
+    public ContactsController(ApplicationDbContext context, IImageService imageService)
     {
       _context = context;
+      _imageService = imageService;
     }
 
     // GET: Contacts
@@ -55,11 +58,16 @@ namespace AddressBookMVC.Controllers
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(
-      [Bind("FirstName,LastName,Address1,Address2,City,State,Zip,Email,Phone,Created,ImageData,ImageType,Id")]
+      [Bind("FirstName,LastName,Address1,Address2,City,State,Zip,Email,Phone,Created,ImageData,ImageFile,ImageType,Id")]
       Contact contact)
     {
       if (ModelState.IsValid)
       {
+        if (contact.ImageFile is not null)
+        {
+          contact.ImageData = await _imageService.ConvertFileToByteArrayAsync(contact.ImageFile);
+          contact.ImageType = contact.ImageFile.ContentType;
+        }
         _context.Add(contact);
         await _context.SaveChangesAsync();
         return RedirectToAction(nameof(Index));
